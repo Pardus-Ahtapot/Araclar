@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#kickstart.sh version0.1
 #Sunucu_ismi_değiştirme
 hostname=$(cat /etc/hostname)
 echo "Sunucu adınız: $hostname"
