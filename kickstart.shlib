@@ -1,0 +1,119 @@
+#!/bin/bash
+#source kickstart.ini
+
+#####hostname değiştirme
+hostname_change() {
+echo "Sunucu adınız: $hostname"
+echo -n "Sunucu adınızı değiştirmek istiyor musunuz? (e/h)? "
+read cevap
+        if [ ! "$cevap" = "${cevap#[Hh]}" ] ;then
+                echo "Sunucu adınız: $hostname"
+        else
+                echo "Yeni sunucu adınızı giriniz: "
+                read newhostname
+                sudo sed -i "s/$hostname/$newhostname/g" /etc/hosts
+                sudo sed -i "s/$hostname/$newhostname/g" /etc/hostname
+                echo "Yeni sunucu adınız: $newhostname"
+        fi
+}
+
+
+#####guncelahtapot-mys
+ahtapot_mys_guncel() {
+echo "Ahtapot-Mys paketi indiriliyor."
+sudo apt-get install ahtapot-mys -y
+sleep 2
+echo "Git indiriliyor."
+sudo apt-get install git -y
+cd /tmp
+echo "Ahtapot-Mys güncel hali indiriliyor."
+	if [ ! -d /tmp/MYS ]; then
+        	git clone -b development https://github.com/Pardus-Ahtapot/MYS.git
+	else
+		sudo rm -rf /tmp/MYS
+		git clone -b development https://github.com/Pardus-Ahtapot/MYS.git
+	fi
+sudo cp -rf /tmp/MYS/ahtapotmys/* /etc/ansible/
+sudo chown -R ahtapotops:ahtapotops /etc/ansible
+echo "MYS sistemi yetkilendirmeleri düzenleniyor."
+sudo chown ahtapotops:ahtapotops -R /var/log/ahtapot
+echo "Ahtaot log sistemi yetkilendirmeleri düzenleniyor."
+}
+
+#####ahtapot-mys paketinin indirilmesi kurulmasi
+#ahtapot_mys_indir() {
+#sudo apt-get download ahtapot-mys
+#sudo apt install ./ahtapot-mys*
+}
+
+
+#####sshdizinkontrol
+ssh_directory() {
+if [ ! -d ~/.ssh ]; then
+        mkdir -p ~/.ssh/
+fi
+echo "~/.ssh oluşturuluyor."
+}
+
+#####anahtarlardizin kontrol
+keys_directory() {
+if [ ! -d ~/anahtarlar ]; then
+        mkdir -p ~/anahtarlar/
+fi
+echo "anahtarlar dizini oluşturuluyor."
+}
+
+#####anahtar_olusturma
+anahtar_olusturma() {
+ssh-keygen -N '' -f $dirkey/$ahtapotops
+ssh-keygen -N '' -f $dirkey/"$ahtapot_ca"
+ssh-keygen -N '' -f $dirkey/"$git"
+ssh-keygen -N '' -f $dirkey/"$myshook"
+ssh-keygen -N '' -f $dirkey/"$gdyshook"
+ssh-keygen -N '' -f $dirkey/"$fw_kullanici"
+echo "ssh-keygen ile erişim için kullanılacak anahtarlar oluşturuldu --[başarılı]"
+}
+
+#####anahtar_imzalama
+anahtar_imzalama() {
+ssh-keygen -s $dirkey/$ahtapot_ca -I ahtapotops@ahtapot.com -n ahtapotops -O no-agent-forwarding -O no-port-forwarding -O no-x11-forwarding $dirkey/"$ahtapotops.pub"
+ssh-keygen -s $dirley/$ahtapot_ca -I ahtapotops@ahtapot.com -n ahtapotops -O no-agent-forwarding -O no-port-forwarding -O no-x11-forwarding $dirkey/"$git.pub"
+ssh-keygen -s $dirley/$ahtapot_ca -I ahtapotops@ahtapot.com -n ahtapotops -O permit-port-forwarding -O permit-x11-forwarding -O force-command="/var/opt/gdysgui/gdys-gui.py" $dirkey/"$fw_kullanici.pub"
+ssh-keygen -s $dirkey/$ahtapot_ca -I ahtapotops@ahtapot.com -n ahtapotops -O no-port-forwarding -O no-x11-forwarding -O force-command="sudo touch /var/run/firewall" $dirkey/"$gdyshook.pub"
+ssh-keygen -s $dirkey/$ahtapot_ca -I ahtapotops@ahtapot.com -n ahtapotops -O no-port-forwarding -O no-x11-forwarding -O force-command="sudo touch /var/run/state" $dirkey/"$myshook.pub"
+echo "ssh-keygen ile ahtapot_ca tarafından anahtarlar imzalandı --[başarılı]"
+}
+
+#####id_rsa oluşturuyor.
+id_rsa_create() {
+if [ ! -f ~/.ssh/id_rsa.pub ]; then
+#        ssh-keygen -t rsa -N "" -f ~/.ssh2/id_rsa
+#       ssh-keygen -f ahtapotops -N "" -f ~/.ssh2/id_rsa
+        cp $dirkey/"$ahtapotops" ~/.ssh/id_rsa
+        cp $dirkey/"$ahtapotops".pub ~/.ssh/id_rsa.pub
+        echo "~/.ssh/id_rsa dosyaları oluturuldu. --[başarılı]"
+fi
+}
+
+######anahtarların kontrolü
+authorized_keys_kontrol() {
+if [ ! -f ~/.ssh/authorized_keys ]; then
+        touch ~/.ssh/authorized_keys
+        echo " ~/.ssh/authorized_keys dosyası oluşturuldu. --[başarılı]"
+fi
+}
+
+
+#####sunucuyu yeniden başlatma isteği
+machine_reboot() {
+echo -n "Makinayı yeniden başlatmak istiyor musunuz? (Ee/Hh)? "
+read cevap
+        if [ ! "$cevap" = "${cevap#[Hh]}" ] ;then
+                exit
+        else
+                echo "Makinanız yeniden başlatılıyor. "
+		sleep 2
+		sudo reboot
+        fi
+]
+}
