@@ -16,8 +16,8 @@ sleep 2
 
 #####ahtapot_mys indirme veya kurulması
 #ahtapot_mys_indir
-ahtapot_mys_guncel
-sleep 2
+#ahtapot_mys_guncel
+#sleep 2
 
 #####ssh dizini oluşturma
 ssh_directory
@@ -28,7 +28,6 @@ keys_directory
 sleep 2
 
 #####anahtarların oluşturulması
-echo "Uzaktan bağlantı için gerekli anahtarlarınız oluşturuluyor."
 anahtar_olusturma
 sleep 2
 
@@ -46,7 +45,7 @@ sleep 2
 
 chmod 700 ~/.ssh/authorized_keys
 cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
-echo "id_rsa anahtarı authorized keys dosyasına eklendi. --[başarılı]"
+echo -e "\e[93m [kickstart : id_rsa anahtarı authorized keys dosyasına eklendi. --[başarılı] ] **********************"
 chmod 400 ~/.ssh/authorized_keys
 chmod 700 ~/.ssh/
 

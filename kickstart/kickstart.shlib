@@ -4,6 +4,7 @@
 
 #####update&distupgrade
 distupgrade() {
+echo -e "\e[93m [kickstart : Update Upgrade Dist-upgrade] ********************** \e[0m"
 sudo apt-get update -y
 sudo apt-get dist-upgrade -y
 }
@@ -15,7 +16,7 @@ wget http://depo.pardus.org.tr/pardus/pool/main/p/pardus-archive-keyring/pardus-
 wget http://depo.pardus.org.tr/pardus-yenikusak-public.asc
 sudo dpkg -i pardus-archive-keyring_2017.2_all.deb
 sudo apt-key add pardus-yenikusak-public.asc
-echo "repo ekleniyor."
+echo -e "\e[93m [kickstart : Paket kurulumları için gerekli olan repo adresleri ekleniyor.] ********************** \e[0m"
 sleep 3
 sudo sh -c 'echo "deb http://depo.pardus.org.tr/ahtapot stable main" >> /etc/apt/sources.list'
 sudo sh -c 'echo "deb http://depo.pardus.org.tr/ahtapot testing main" >> /etc/apt/sources.list'
@@ -23,36 +24,36 @@ sudo sh -c 'echo "deb [trusted=yes] http://depo.pardus.org.tr/pardus-yenikusak y
 sudo sh -c 'echo "deb [trusted=yes] http://depo.pardus.org.tr/ahtapot-siem yenikusak main" >> /etc/apt/sources.list'
 sudo sh -c 'echo "deb [trusted=yes] http://depo.pardus.org.tr/ahtapot yenikusak main" >> /etc/apt/sources.list'
 sudo apt-get update -y
-echo "repolar güncelleniyor."
+echo -e "\e[93m [kickstart : Paket kurulumları için gerekli olan repo adresleri ekleniyor. --[başarılı]] ********************** \e[0m"
 sleep 3
 }
 
 #####hostname değiştirme
 hostname_change() {
-echo "Sunucu adınız: $hostname"
-echo -n "Sunucu adınızı değiştirmek istiyor musunuz? (e/h)? "
+echo -e "\e[93m [kickstart : Sunucu Adınız: $hostname ] ********************** \e[0m"
+echo -n -e "\e[93m [kickstart : Sunucu adınızı değiştirmek istiyor musunuz?  (Ee/Hh) ] \e[0m"
 read cevap
         if [ ! "$cevap" = "${cevap#[Hh]}" ] ;then
-                echo "Sunucu adınız: $hostname"
+                echo -e "\e[93m [kickstart : Sunucu Adınız Değiştirilmedi : $hostname ] ********************** \e[0m"
         else
-                echo "Yeni sunucu adınızı giriniz: "
+                echo -e  "\e[93m Yeni Sunucu Adınızı Giriniz :  \e[0m"
                 read newhostname
                 sudo sed -i "s/$hostname/$newhostname/g" /etc/hosts
                 sudo sed -i "s/$hostname/$newhostname/g" /etc/hostname
-                echo "Yeni sunucu adınız: $newhostname"
+                echo -e "\e[93m [kickstart : Yeni Sunucu Adınız: $newhostname ] \e[0m"
         fi
 }
 
 
 #####guncelahtapot-mys
 ahtapot_mys_guncel() {
-echo "Ahtapot-Mys paketi indiriliyor."
+echo -e "\e[93m [kickstart : ahtapot-mys Paketi İndiriliyor. ] ********************** \e[0m"
 sudo apt-get install ahtapot-mys -y
 sleep 2
-echo "Git indiriliyor."
+echo -e "\e[93m [kickstart : Git indiriliyor. ] ********************** \e[0m"
 sudo apt-get install git -y
 cd /tmp
-echo "Ahtapot-Mys güncel hali indiriliyor."
+echo -e "\e[93m [kickstart : ahtapot-mys güncel hâli indiriliyor. ] ********************** \e[0m"
 	if [ ! -d /tmp/MYS ]; then
         	git clone -b development https://github.com/Pardus-Ahtapot/MYS.git
 	else
@@ -61,14 +62,16 @@ echo "Ahtapot-Mys güncel hali indiriliyor."
 	fi
 sudo cp -rf /tmp/MYS/ahtapotmys/* /etc/ansible/
 sudo chown -R ahtapotops:ahtapotops /etc/ansible
-echo "MYS sistemi yetkilendirmeleri düzenleniyor."
+echo -e "\e[93m [kickstart : MYS yetkilendirmeleri düzenleniyor. ] ********************** \e[0m"
 sudo chown ahtapotops:ahtapotops -R /var/log/ahtapot
-echo "Ahtaot log sistemi yetkilendirmeleri düzenleniyor."
+echo -e "\e[93m [kickstart : Ahtapot Log Sistemi yetkilendirmeleri düzenleniyor. ] ********************** \e[0m"
 }
 
 #####ahtapot-mys paketinin indirilmesi kurulmasi
 #ahtapot_mys_indir() {
+#echo -e "\e[93m [kickstart : ahtapot-mys paketi indiriliyor. ] ********************** \e[0m"
 #sudo apt-get download ahtapot-mys
+#echo -e "\e[93m [kickstart : ahtapot-mys paketi kuruluyor. ] ********************** \e[0m"
 #sudo apt install ./ahtapot-mys*
 #}
 
@@ -78,7 +81,7 @@ ssh_directory() {
 if [ ! -d ~/.ssh ]; then
         mkdir -p ~/.ssh/
 fi
-echo "~/.ssh oluşturuluyor."
+echo -e "\e[93m [kickstart : ~/.ssh oluşturuluyor. ] ********************** \e[0m"
 }
 
 #####anahtarlardizin kontrol
@@ -86,28 +89,30 @@ keys_directory() {
 if [ ! -d ~/anahtarlar ]; then
         mkdir -p ~/anahtarlar/
 fi
-echo "anahtarlar dizini oluşturuluyor."
+echo -e "\e[93m [kickstart : /home/ahtapotops/anahtarlar dizini oluşturuldu. ] ********************** \e[0m"
 }
 
 #####anahtar_olusturma
 anahtar_olusturma() {
+echo -e "\e[93m [kickstart : Uzaktan bağlantı için gerekli  anahtarlar oluşturuluyor. ] ********************** \e[0m"
 ssh-keygen -N '' -f $dirkey/$ahtapotops
 ssh-keygen -N '' -f $dirkey/"$ahtapot_ca"
 ssh-keygen -N '' -f $dirkey/"$git"
 ssh-keygen -N '' -f $dirkey/"$myshook"
 ssh-keygen -N '' -f $dirkey/"$gdyshook"
 ssh-keygen -N '' -f $dirkey/"$fw_kullanici"
-echo "ssh-keygen ile erişim için kullanılacak anahtarlar oluşturuldu --[başarılı]"
+echo -e "\e[93m [kickstart : ssh-keygen ile erişim için kullanılacak anahtarlar oluşturuldu. --[başarılı] ] ********************** \e[0m"
 }
 
 #####anahtar_imzalama
 anahtar_imzalama() {
+echo -e "\e[93m [kickstart : ahtapot_ca ile imzalama işlemi gerçekleştiriliyor. ] ********************** \e[0m"
 ssh-keygen -s $dirkey/$ahtapot_ca -I ahtapotops@ahtapot.com -n ahtapotops -O no-agent-forwarding -O no-port-forwarding -O no-x11-forwarding $dirkey/"$ahtapotops.pub"
 ssh-keygen -s $dirkey/$ahtapot_ca -I ahtapotops@ahtapot.com -n ahtapotops -O no-agent-forwarding -O no-port-forwarding -O no-x11-forwarding $dirkey/"$git.pub"
 ssh-keygen -s $dirkey/$ahtapot_ca -I ahtapotops@ahtapot.com -n ahtapotops -O permit-port-forwarding -O permit-x11-forwarding -O force-command="/var/opt/gdysgui/gdys-gui.py" $dirkey/"$fw_kullanici.pub"
 ssh-keygen -s $dirkey/$ahtapot_ca -I ahtapotops@ahtapot.com -n ahtapotops -O no-port-forwarding -O no-x11-forwarding -O force-command="sudo touch /var/run/firewall" $dirkey/"$gdyshook.pub"
 ssh-keygen -s $dirkey/$ahtapot_ca -I ahtapotops@ahtapot.com -n ahtapotops -O no-port-forwarding -O no-x11-forwarding -O force-command="sudo touch /var/run/state" $dirkey/"$myshook.pub"
-echo "ssh-keygen ile ahtapot_ca tarafından anahtarlar imzalandı --[başarılı]"
+echo -e "\e[93m [kickstart : ahtapot_ca ile imzalama gerçekleştirildi. --[başarılı] ] ********************** \e[0m"
 }
 
 #####id_rsa oluşturuyor.
@@ -117,27 +122,29 @@ if [ ! -f ~/.ssh/id_rsa.pub ]; then
 #       ssh-keygen -f ahtapotops -N "" -f ~/.ssh2/id_rsa
         cp $dirkey/"$ahtapotops" ~/.ssh/id_rsa
         cp $dirkey/"$ahtapotops".pub ~/.ssh/id_rsa.pub
-        echo "~/.ssh/id_rsa dosyaları oluturuldu. --[başarılı]"
+	cp $dirkey/ahtapotops-cert.pub ~/.ssh/id_rsa-cert.pub
 fi
+echo -e "\e[93m [kickstart : ~/.ssh/id_rsa dosyaları oluşturuldu. --[başarılı] ] ********************** \e[0m"
 }
 
 ######anahtarların kontrolü
 authorized_keys_kontrol() {
 if [ ! -f ~/.ssh/authorized_keys ]; then
         touch ~/.ssh/authorized_keys
-        echo " ~/.ssh/authorized_keys dosyası oluşturuldu. --[başarılı]"
+        echo " ~/.ssh/authorized_keys dosyası oluşturuldu. --[başarılı] \e[0m"
 fi
+echo -e "\e[93m [kickstart :  ~/.ssh/authorized_keys dosyası oluşturuldu. --[başarılı] ] ********************** \e[0m"
 }
 
 
 #####sunucuyu yeniden başlatma isteği
 machine_reboot() {
-echo -n "Makinayı yeniden başlatmak istiyor musunuz? (Ee/Hh)? "
+echo -e -n "\e[93m [kickstart : Makinayı yeniden başlatmak istiyor musunuz? (Ee/Hh)? ] ********************** \e[0m"
 read cevap
         if [ ! "$cevap" = "${cevap#[Hh]}" ] ;then
                 exit
         else
-                echo "Makinanız yeniden başlatılıyor. "
+		echo -e "\e[93m [kickstart : Makinanız yeniden başlatılıyor. ] ********************** \e[0m"
 		sleep 2
 		sudo reboot
         fi
