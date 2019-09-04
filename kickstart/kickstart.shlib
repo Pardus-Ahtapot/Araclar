@@ -131,7 +131,6 @@ echo -e "\e[93m [kickstart : ~/.ssh/id_rsa dosyaları oluşturuldu. --[başarıl
 authorized_keys_kontrol() {
 if [ ! -f ~/.ssh/authorized_keys ]; then
         touch ~/.ssh/authorized_keys
-        echo " ~/.ssh/authorized_keys dosyası oluşturuldu. --[başarılı] \e[0m"
 fi
 echo -e "\e[93m [kickstart :  ~/.ssh/authorized_keys dosyası oluşturuldu. --[başarılı] ] ********************** \e[0m"
 }

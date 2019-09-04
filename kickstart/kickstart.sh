@@ -45,7 +45,7 @@ sleep 2
 
 chmod 700 ~/.ssh/authorized_keys
 cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
-echo -e "\e[93m [kickstart : id_rsa anahtarı authorized keys dosyasına eklendi. --[başarılı] ] **********************"
+echo -e "\e[93m [kickstart : id_rsa anahtarı authorized keys dosyasına eklendi. --[başarılı] ] ********************** \e[0m"
 chmod 400 ~/.ssh/authorized_keys
 chmod 700 ~/.ssh/
 
