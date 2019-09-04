@@ -8,26 +8,24 @@ sudo apt-get update -y
 sudo apt-get dist-upgrade -y
 }
 
+
 #####sourcelist_change
-sourcelist_change() {
+sourceslist_change() {
 wget http://depo.pardus.org.tr/pardus/pool/main/p/pardus-archive-keyring/pardus-archive-keyring_2017.2_all.deb
 wget http://depo.pardus.org.tr/pardus-yenikusak-public.asc
 sudo dpkg -i pardus-archive-keyring_2017.2_all.deb
 sudo apt-key add pardus-yenikusak-public.asc
-echo "### Official Pardus Package Repositories ###"  > /etc/apt/sources.list
-echo "deb http://depo.pardus.org.tr/pardus onyedi main contrib non-free" >> /etc/apt/sources.list
-echo "# deb-src http://depo.pardus.org.tr/pardus onyedi main contrib non-free" >> /etc/apt/sources.list
-echo "deb http://depo.pardus.org.tr/guvenlik onyedi main contrib non-free" >> /etc/apt/sources.list
-echo "# deb-src http://depo.pardus.org.tr/guvenlik onyedi main contrib non-free" >> /etc/apt/sources.list
-echo "deb http://depo.pardus.org.tr/ahtapot stable main" >> /etc/apt/sources.list
-echo "deb http://depo.pardus.org.tr/ahtapot testing main" >> /etc/apt/sources.list
-echo "deb [trusted=yes] http://depo.pardus.org.tr/pardus-yenikusak yenikusak main non-free contrib" >> /etc/apt/sources.list
-echo "deb [trusted=yes] http://depo.pardus.org.tr/ahtapot-siem yenikusak main" >> /etc/apt/sources.list
-echo "deb [trusted=yes] http://depo.pardus.org.tr/ahtapot yenikusak main" >> /etc/apt/sources.list
+echo "repo ekleniyor."
+sleep 3
+sudo sh -c 'echo "deb http://depo.pardus.org.tr/ahtapot stable main" >> /etc/apt/sources.list'
+sudo sh -c 'echo "deb http://depo.pardus.org.tr/ahtapot testing main" >> /etc/apt/sources.list'
+sudo sh -c 'echo "deb [trusted=yes] http://depo.pardus.org.tr/pardus-yenikusak yenikusak main non-free contrib" >> /etc/apt/sources.list'
+sudo sh -c 'echo "deb [trusted=yes] http://depo.pardus.org.tr/ahtapot-siem yenikusak main" >> /etc/apt/sources.list'
+sudo sh -c 'echo "deb [trusted=yes] http://depo.pardus.org.tr/ahtapot yenikusak main" >> /etc/apt/sources.list'
 sudo apt-get update -y
 echo "repolar güncelleniyor."
+sleep 3
 }
-
 
 #####hostname değiştirme
 hostname_change() {
@@ -72,7 +70,7 @@ echo "Ahtaot log sistemi yetkilendirmeleri düzenleniyor."
 #ahtapot_mys_indir() {
 #sudo apt-get download ahtapot-mys
 #sudo apt install ./ahtapot-mys*
-}
+#}
 
 
 #####sshdizinkontrol
@@ -105,8 +103,8 @@ echo "ssh-keygen ile erişim için kullanılacak anahtarlar oluşturuldu --[baş
 #####anahtar_imzalama
 anahtar_imzalama() {
 ssh-keygen -s $dirkey/$ahtapot_ca -I ahtapotops@ahtapot.com -n ahtapotops -O no-agent-forwarding -O no-port-forwarding -O no-x11-forwarding $dirkey/"$ahtapotops.pub"
-ssh-keygen -s $dirley/$ahtapot_ca -I ahtapotops@ahtapot.com -n ahtapotops -O no-agent-forwarding -O no-port-forwarding -O no-x11-forwarding $dirkey/"$git.pub"
-ssh-keygen -s $dirley/$ahtapot_ca -I ahtapotops@ahtapot.com -n ahtapotops -O permit-port-forwarding -O permit-x11-forwarding -O force-command="/var/opt/gdysgui/gdys-gui.py" $dirkey/"$fw_kullanici.pub"
+ssh-keygen -s $dirkey/$ahtapot_ca -I ahtapotops@ahtapot.com -n ahtapotops -O no-agent-forwarding -O no-port-forwarding -O no-x11-forwarding $dirkey/"$git.pub"
+ssh-keygen -s $dirkey/$ahtapot_ca -I ahtapotops@ahtapot.com -n ahtapotops -O permit-port-forwarding -O permit-x11-forwarding -O force-command="/var/opt/gdysgui/gdys-gui.py" $dirkey/"$fw_kullanici.pub"
 ssh-keygen -s $dirkey/$ahtapot_ca -I ahtapotops@ahtapot.com -n ahtapotops -O no-port-forwarding -O no-x11-forwarding -O force-command="sudo touch /var/run/firewall" $dirkey/"$gdyshook.pub"
 ssh-keygen -s $dirkey/$ahtapot_ca -I ahtapotops@ahtapot.com -n ahtapotops -O no-port-forwarding -O no-x11-forwarding -O force-command="sudo touch /var/run/state" $dirkey/"$myshook.pub"
 echo "ssh-keygen ile ahtapot_ca tarafından anahtarlar imzalandı --[başarılı]"
