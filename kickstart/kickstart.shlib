@@ -5,8 +5,8 @@
 #####update&distupgrade
 distupgrade() {
 echo -e "\e[93m [kickstart : Update Upgrade Dist-upgrade] ********************** \e[0m"
-sudo apt-get update -y
-sudo apt-get dist-upgrade -y
+sudo apt-get update -yq
+sudo apt-get dist-upgrade -yq
 }
 
 
