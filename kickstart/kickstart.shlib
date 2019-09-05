@@ -12,19 +12,42 @@ sudo apt-get dist-upgrade -y
 
 #####sourcelist_change
 sourceslist_change() {
+echo -e "\e[93m [kickstart : Pardus arşiv a ekleniyor.] ********************** \e[0m"
 wget http://depo.pardus.org.tr/pardus/pool/main/p/pardus-archive-keyring/pardus-archive-keyring_2017.2_all.deb
 wget http://depo.pardus.org.tr/pardus-yenikusak-public.asc
 sudo dpkg -i pardus-archive-keyring_2017.2_all.deb
 sudo apt-key add pardus-yenikusak-public.asc
 echo -e "\e[93m [kickstart : Paket kurulumları için gerekli olan repo adresleri ekleniyor.] ********************** \e[0m"
 sleep 3
-sudo sh -c 'echo "deb http://depo.pardus.org.tr/ahtapot stable main" >> /etc/apt/sources.list'
+if ! grep -q "$pardusguvenlik" "$File"; then
+sudo sh -c 'echo "deb http://depo.pardus.org.tr/guvelik onyedi main contrib non-free" >> /etc/apt/sources.list'
+fi
+
+if ! grep -q "$pardusonyedi" "$File"; then
+sudo sh -c 'echo "deb http://depo.pardus.org.tr/pardus onyedi main contrib non-free" >> /etc/apt/sources.list'
+fi
+
+if ! grep -q "$ahtapottesting" "$File"; then
 sudo sh -c 'echo "deb http://depo.pardus.org.tr/ahtapot testing main" >> /etc/apt/sources.list'
-sudo sh -c 'echo "deb [trusted=yes] http://depo.pardus.org.tr/pardus-yenikusak yenikusak main non-free contrib" >> /etc/apt/sources.list'
+fi
+
+if ! grep -q "$ahtapotstable" "$File"; then
+sudo sh -c 'echo "deb http://depo.pardus.org.tr/ahtapot stable main" >> /etc/apt/sources.list'
+fi
+
+if ! grep -q "$ahtapotsiem" "$File"; then
 sudo sh -c 'echo "deb [trusted=yes] http://depo.pardus.org.tr/ahtapot-siem yenikusak main" >> /etc/apt/sources.list'
+fi
+
+if ! grep -q "$pardusyenikusak" "$File"; then
+sudo sh -c 'echo "deb [trusted=yes] http://depo.pardus.org.tr/pardus-yenikusak yenikusak main non-free contrib" >> /etc/apt/sources.list'
+fi
+
+if ! grep -q "$ahtapotyenikusak" "$File"; then
 sudo sh -c 'echo "deb [trusted=yes] http://depo.pardus.org.tr/ahtapot yenikusak main" >> /etc/apt/sources.list'
+fi
 sudo apt-get update -y
-echo -e "\e[93m [kickstart : Paket kurulumları için gerekli olan repo adresleri ekleniyor. --[başarılı]] ********************** \e[0m"
+echo -e "\e[93m [kickstart : Paket kurulumları için gerekli olan repo adresleri eklendi. --[başarılı]] ********************** \e[0m"
 sleep 3
 }
 
