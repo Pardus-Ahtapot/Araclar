@@ -12,7 +12,7 @@ sudo apt-get dist-upgrade -yq
 
 #####sourcelist_change
 sourceslist_change() {
-echo -e "\e[93m [kickstart : Pardus arşiv a ekleniyor.] ********************** \e[0m"
+echo -e "\e[93m [kickstart : Pardus arşiv repolari ekleniyor.] ********************** \e[0m"
 wget http://depo.pardus.org.tr/pardus/pool/main/p/pardus-archive-keyring/pardus-archive-keyring_2017.2_all.deb
 wget http://depo.pardus.org.tr/pardus-yenikusak-public.asc
 sudo dpkg -i pardus-archive-keyring_2017.2_all.deb
