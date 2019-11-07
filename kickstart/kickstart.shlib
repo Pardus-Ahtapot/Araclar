@@ -1,5 +1,5 @@
 #!/bin/bash
-#source kickstart.ini
+source kickstart.ini
 
 
 #####update&distupgrade
@@ -19,32 +19,14 @@ sudo dpkg -i pardus-archive-keyring_2017.2_all.deb
 sudo apt-key add pardus-yenikusak-public.asc
 echo -e "\e[93m [kickstart : Paket kurulumları için gerekli olan repo adresleri ekleniyor.] ********************** \e[0m"
 sleep 3
-if ! grep -q "$pardusguvenlik" "$File"; then
-sudo sh -c 'echo "deb http://depo.pardus.org.tr/guvelik onyedi main contrib non-free" >> /etc/apt/sources.list'
+if [[ ! -e /etc/apt/sources.list.d/depo_pardus_org_tr_ahtapot.list ]];then
+sudo sh -c 'echo deb [trusted=yes] http://depo.pardus.org.tr/ahtapot yenikusak main >> /etc/apt/sources.list.d/depo_pardus_org_tr_ahtapot.list'
 fi
-
-if ! grep -q "$pardusonyedi" "$File"; then
-sudo sh -c 'echo "deb http://depo.pardus.org.tr/pardus onyedi main contrib non-free" >> /etc/apt/sources.list'
+if [[ ! -e /etc/apt/sources.list.d/depo_pardus_org_tr_ahtapot_siem.list ]];then
+sudo sh -c 'echo deb [trusted=yes] http://depo.pardus.org.tr/ahtapot-siem yenikusak main >> /etc/apt/sources.list.d/depo_pardus_org_tr_ahtapot_siem.list'
 fi
-
-if ! grep -q "$ahtapottesting" "$File"; then
-sudo sh -c 'echo "deb http://depo.pardus.org.tr/ahtapot testing main" >> /etc/apt/sources.list'
-fi
-
-if ! grep -q "$ahtapotstable" "$File"; then
-sudo sh -c 'echo "deb http://depo.pardus.org.tr/ahtapot stable main" >> /etc/apt/sources.list'
-fi
-
-if ! grep -q "$ahtapotsiem" "$File"; then
-sudo sh -c 'echo "deb [trusted=yes] http://depo.pardus.org.tr/ahtapot-siem yenikusak main" >> /etc/apt/sources.list'
-fi
-
-if ! grep -q "$pardusyenikusak" "$File"; then
-sudo sh -c 'echo "deb [trusted=yes] http://depo.pardus.org.tr/pardus-yenikusak yenikusak main non-free contrib" >> /etc/apt/sources.list'
-fi
-
-if ! grep -q "$ahtapotyenikusak" "$File"; then
-sudo sh -c 'echo "deb [trusted=yes] http://depo.pardus.org.tr/ahtapot yenikusak main" >> /etc/apt/sources.list'
+if [[ ! -e /etc/apt/sources.list.d/depo_pardus_org_tr_pardus_yenikusak.list ]];then
+sudo sh -c 'echo deb [trusted=yes] http://depo.pardus.org.tr/pardus-yenikusak yenikusak main non-free contrib >> /etc/apt/sources.list.d/depo_pardus_org_tr_pardus_yenikusak.list'
 fi
 sudo apt-get update -y
 echo -e "\e[93m [kickstart : Paket kurulumları için gerekli olan repo adresleri eklendi. --[başarılı]] ********************** \e[0m"
@@ -63,6 +45,7 @@ read cevap
                 read newhostname
                 sudo sed -i "s/$hostname/$newhostname/g" /etc/hosts
                 sudo sed -i "s/$hostname/$newhostname/g" /etc/hostname
+                echo -e "\e[93m [kickstart : Sunucu adınız değiştirildi. --[başarılı] ********************** \e[0m"
                 echo -e "\e[93m [kickstart : Yeni Sunucu Adınız: $newhostname ] \e[0m"
         fi
 }
@@ -103,6 +86,7 @@ echo -e "\e[93m [kickstart : Ahtapot Log Sistemi yetkilendirmeleri düzenleniyor
 ssh_directory() {
 if [ ! -d ~/.ssh ]; then
         mkdir -p ~/.ssh/
+	chmod 700 ~/.ssh
 fi
 echo -e "\e[93m [kickstart : ~/.ssh oluşturuluyor. ] ********************** \e[0m"
 }
@@ -154,8 +138,12 @@ echo -e "\e[93m [kickstart : ~/.ssh/id_rsa dosyaları oluşturuldu. --[başarıl
 authorized_keys_kontrol() {
 if [ ! -f ~/.ssh/authorized_keys ]; then
         touch ~/.ssh/authorized_keys
-fi
 echo -e "\e[93m [kickstart :  ~/.ssh/authorized_keys dosyası oluşturuldu. --[başarılı] ] ********************** \e[0m"
+        chmod 700 ~/.ssh/authorized_keys
+        cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+        chmod 400 ~/.ssh/authorized_keys
+fi
+echo -e "\e[93m [kickstart : id_rsa anahtarı authorized keys dosyasına eklendi. --[başarılı] ] ********************** \e[0m"
 }
 
 
