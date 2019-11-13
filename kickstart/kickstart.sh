@@ -16,8 +16,8 @@ sleep 2
 
 #####ahtapot_mys indirme veya kurulması
 #ahtapot_mys_indir
-#ahtapot_mys_guncel
-#sleep 2
+ahtapot_mys_guncel
+sleep 2
 
 #####ssh dizini oluşturma
 ssh_directory
@@ -43,10 +43,11 @@ sleep 2
 authorized_keys_kontrol
 sleep 2
 
-chmod 700 ~/.ssh/authorized_keys
-cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
-echo -e "\e[93m [kickstart : id_rsa anahtarı authorized keys dosyasına eklendi. --[başarılı] ] ********************** \e[0m"
-chmod 400 ~/.ssh/authorized_keys
-chmod 700 ~/.ssh/
+#chmod 700 ~/.ssh/authorized_keys
+#cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+#echo -e "\e[93m [kickstart : id_rsa anahtarı authorized keys dosyasına eklendi. --[başarılı] ] ********************** \e[0m"
+#chmod 400 ~/.ssh/authorized_keys
+#chmod 700 ~/.ssh/
 
 machine_reboot
+
