@@ -26,7 +26,7 @@ if [[ ! -e /etc/apt/sources.list.d/depo_pardus_org_tr_ahtapot_siem.list ]];then
 sudo sh -c 'echo deb [trusted=yes] http://depo.pardus.org.tr/ahtapot-siem yenikusak main >> /etc/apt/sources.list.d/depo_pardus_org_tr_ahtapot_siem.list'
 fi
 if [[ ! -e /etc/apt/sources.list.d/depo_pardus_org_tr_pardus_yenikusak.list ]];then
-sudo sh -c 'echo deb [trusted=yes] http://depo.pardus.org.tr/pardus-yenikusak yenikusak main non-free contrib >> /etc/apt/sources.list.d/depo_pardus_org_tr_pardus_yenikusak.list'
+sudo sh -c 'echo deb [trusted=yes] http://depo.pardus.org.tr/pardus-yenikusak yenikusak main contrib non-free >> /etc/apt/sources.list.d/depo_pardus_org_tr_pardus_yenikusak.list'
 fi
 sudo apt-get update -y
 echo -e "\e[93m [kickstart : Paket kurulumları için gerekli olan repo adresleri eklendi. --[başarılı]] ********************** \e[0m"
