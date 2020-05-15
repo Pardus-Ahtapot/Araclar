@@ -1,0 +1,244 @@
+#####Ahtapot BSGS Kickstart kurulum öncesi işlemleri kolaylaştırıcı uygulamadır. 
+#####kickstart.sh v1.0
+#####Yardım için ./kickstart.sh --help
+
+#!/bin/bash
+source kickstart.ini
+
+#####yardım komutu
+Help() {
+cat <<-END
+Ahtapot BSGS Kickstart, Pardus Ahtapot Ekibi tarafından geliştirilmiş. Kurulum öncesi adımalrını gerçekleştiren, kolaylaştırıcı bash scripttir.
+
+Kullanım:	./kickstart -parametre | --parametre
+---------
+   -h | --help
+     Kullanım Bilgileri
+    1-  Repodan kurulum yapınız.	sudo apt-get install ahtapot-kickstart
+    2-  Araçlar reposunu indiriniz.	git clone -b development https://github.com/Pardus-Ahtapot/Araclar.git
+ 					cp -r Araclar/kickstart/ ./kickstart
+ 					cd kickstart
+     					./kickstart.sh
+   -i | --info | --information
+     Ahtapot BSGS Kickstart, MYS kurulum öncesi işlemleri gerçekleştiren basit bir scripttir.
+   -V | --version
+     Ahtapot BSGS Kickstart v1.0
+END
+}
+
+
+#####update&distupgrade
+distupgrade(){
+declare PACKAGES=("update"  "dist-upgrade")
+NUM_PACKAGES=${#PACKAGES[*]} # no. of packages to update (#packages in the array $PACKAGES)
+step=$((100/$NUM_PACKAGES))  # progress bar step
+cur_file_idx=0
+counter=0
+(
+while :
+do
+    cat <<EOF
+XXX
+$counter
+$counter% upgraded
+
+$COMMAND
+XXX
+EOF
+    COMMAND="apt-get ${PACKAGES[$cur_file_idx]} -yq" # sets/updates command to exec.
+    [[ $NUM_PACKAGES -lt $cur_file_idx ]] && $COMMAND # executes command
+
+    (( cur_file_idx+=1 )) # increase counter
+    (( counter+=step ))
+    [ $counter -gt 100 ] && break  # break when reach the 100% (or greater
+                                   # since Bash only does integer arithmetic)
+    sleep 1 # delay it a specified amount of time i.e. 1 sec
+done
+) | dialog --title "Paket Güncelleme" --backtitle "Ahtapot BSGS Kickstart v1.0" --gauge "Ahtapot repo paket listesi güncelleniyor. Sistemdee kurulu paketler güncelleniyor. Bağımlılıklar yükleniyor, gerekli olmayan paketler siliniyor. Lütfen bekleyiniz." 10 70 0
+}
+
+
+#####sourcelist değiştirme
+sourceslist_change() {
+#echo -e "\e[93m [kickstart : Pardus arşiv repolari ekleniyor.] ********************** \e[0m"
+(
+wget http://depo.pardus.org.tr/pardus/pool/main/p/pardus-archive-keyring/pardus-archive-keyring_2017.2_all.deb 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+wget http://depo.pardus.org.tr/pardus-yenikusak-public.asc 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+sudo dpkg -i pardus-archive-keyring_2017.2_all.deb 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+sudo apt-key add pardus-yenikusak-public.asc 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+if [[ ! -e /etc/apt/sources.list.d/depo_pardus_org_tr_ahtapot.list ]];then
+sudo sh -c 'deb [trusted=yes] http://depo.pardus.org.tr/ahtapot yenikusak main >> /etc/apt/sources.list.d/depo_pardus_org_tr_ahtapot.list' 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+fi
+if [[ ! -e /etc/apt/sources.list.d/depo_pardus_org_tr_ahtapot_siem.list ]];then
+sudo sh -c 'deb [trusted=yes] http://depo.pardus.org.tr/ahtapot-siem yenikusak main >> /etc/apt/sources.list.d/depo_pardus_org_tr_ahtapot_siem.list' 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+fi
+if [[ ! -e /etc/apt/sources.list.d/depo_pardus_org_tr_pardus_yenikusak.list ]];then
+sudo sh -c 'deb [trusted=yes] http://depo.pardus.org.tr/pardus-yenikusak yenikusak main contrib non-free >> /etc/apt/sources.list.d/depo_pardus_org_tr_pardus_yenikusak.list' 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+fi
+sudo apt-get update -y 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+) |dialog --title "Repo Adresleri Güncelleme" --backtitle "Ahtapot BSGS Kickstart v1.0" --infobox 'Pardus arşiv repolari ekleniyor.Paket kurulumları için gerekli olan repo adresleri ekleniyor. /etc/apt/sources.list repo adresleriniz güncellenmektedir.' 10 70;
+}
+
+#####hostname değiştirme
+hostname_change() {
+hostname_change_fonk() {
+hostname=$(cat /etc/hostname)
+sudo sed -i "s/$hostname/$newhostname/g" /etc/hosts 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+sudo sed -i "s/$hostname/$newhostname/g" /etc/hostname 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+}
+
+dialog --title "Ahtapot kickstarted çalıştırıldı" --backtitle "Ahtapot BSGS Kickstart v1.0" --yesno "Sunucu adınız $hostname  Sunucu adınızı değiştirmek istiyor musunuz?" 10 70
+response=$?
+case $response in
+   0) dialog --inputbox "Yeni sunucu isminizi giriniz." 10 70  2> /tmp/kickstart.newhostname.tmp.$$
+      retval=$?
+      newhostname=`cat /tmp/kickstart.newhostname.tmp.$$`
+      case $retval in
+         0) hostname_change_fonk ${newhostname} ;;
+         1) dialog --title "Ahtapot kickstarted çalıştırıldı" --backtitle "Ahtapot BSGS Kickstart v1.0" --infobox "Sunucu adınız değiştirilmedi. $hostname " 10 70 ;;
+      esac
+   ;;
+   1) dialog --title "Ahtapot kickstarted çalıştırıldı" --backtitle "Ahtapot BSGS Kickstart v1.0" --msgbox "Sunucu adınız değiştirilmedi." 10 70 ;;
+   255) dialog --title "Ahtapot kickstarted çalıştırıldı" --backtitle "Ahtapot BSGS Kickstart v1.0" --msgbox "Çıkış yaptınız.." 10 70 ;;
+esac
+rm -rf /tmp/kickstart.newhostname.tmp.$$
+}
+
+
+#####ahtapot_mys_guncel
+ahtapot_mys_guncel(){
+declare PACKAGES=("ahtapot-mys"  "git")
+NUM_PACKAGES=${#PACKAGES[*]} # no. of packages to update (#packages in the array $PACKAGES)
+step=$((100/$NUM_PACKAGES))  # progress bar step
+cur_file_idx=0
+counter=0
+#DEST=${HOME}
+(
+# infinite while loop
+while :
+do
+    cat <<EOF
+XXX
+$counter
+$counter% upgraded
+
+$COMMAND
+XXX
+EOF
+    COMMAND="apt-get install ${PACKAGES[$cur_file_idx]} -yq" # sets/updates command to exec.
+    [[ $NUM_PACKAGES -lt $cur_file_idx ]] && $COMMAND # executes command
+
+    (( cur_file_idx+=1 )) # increase counter
+    (( counter+=step ))
+    [ $counter -gt 100 ] && break  # break when reach the 100% (or greater
+                                   # since Bash only does integer arithmetic)
+    sleep 1 # delay it a specified amount of time i.e. 1 sec
+done
+) | dialog --title "Paket Güncelleme" --backtitle "Ahtapot BSGS Kickstart v1.0"  --gauge "ahtapot mys güncel hâli indiriliyor. git indiriliyor." 10 70 0
+(
+cd /tmp
+        if [ ! -d /tmp/MYS ]; then
+                git clone -b development https://github.com/Pardus-Ahtapot/MYS.git 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+        else
+                sudo rm -rf /tmp/MYS 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+                git clone -b development https://github.com/Pardus-Ahtapot/MYS.git 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+        fi
+sudo rm -rf /etc/ansible/* 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log && sudo cp -rf /tmp/MYS/ahtapotmys/* /etc/ansible/ 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log && chown -R ahtapotops:ahtapotops /etc/ansible 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log && sudo chown ahtapotops:ahtapotops -R /var/log/ahtapot 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log | dialog --title "Paket Güncelleme" --backtitle "Ahtapot BSGS Kickstart v1.0"  --programbox  10 70
+) | dialog --title "Paket Güncelleme" --backtitle "Ahtapot BSGS Kickstart v1.0"  --infobox "MYS yetkilendirmeleri düzenleniyor."  10 70
+}
+
+
+#####ahtapot-mys paketinin indirilmesi kurulmasi
+#ahtapot_mys_indir() {
+#echo -e "\e[93m [kickstart : ahtapot-mys paketi indiriliyor. ] ********************** \e[0m"
+#sudo apt-get download ahtapot-mys 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+#echo -e "\e[93m [kickstart : ahtapot-mys paketi kuruluyor. ] ********************** \e[0m"
+#sudo apt install ./ahtapot-mys* 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+#}
+
+
+#####sshdizinkontrol
+ssh_directory() {
+(
+if [ ! -d ~/.ssh ]; then
+        mkdir -p ~/.ssh/ 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+        chmod 700 ~/.ssh 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+fi
+) | dialog --title "SSH Dizin Kontrol " --backtitle "Ahtapot BSGS Kickstart v1.0" --infobox "ahtapotops kullanıcına ait .ssh dizini oluşturuldu." 10 70
+sleep 2
+}
+
+#####anahtarlardizin kontrol
+keys_directory() {
+(
+if [ ! -d ~/anahtarlar ]; then
+        mkdir -p ~/anahtarlar/  1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+fi
+)  | dialog --title "Anahtarlar Dizin Kontrol" --backtitle "Ahtapot BSGS Kickstart v1.0" --infobox "ahtapotops kullanıcının ev dizininde anahtarlar dizini oluştuldu." 10 70
+sleep 2
+}
+
+#####anahtar_olusturma
+anahtar_olusturma() {
+(
+rm -rf $dirkey/*
+ssh-keygen -N '' -f $dirkey/"$ahtapotops" 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+ssh-keygen -N '' -f $dirkey/"$ahtapot_ca" 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+ssh-keygen -N '' -f $dirkey/"$git" 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+ssh-keygen -N '' -f $dirkey/"$myshook" 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+ssh-keygen -N '' -f $dirkey/"$gdyshook" 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+ssh-keygen -N '' -f $dirkey/"$fw_kullanici" 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+) | dialog --title "Anahtar İmzalama" --backtitle "Ahtapot BSGS Kickstart v1.0" --infobox "Uzaktan bağlantı için gerekli anahtarlar oluşturuluyor. ssh-keygen ile erişim için kullanılacak anahtarlar oluşturuldu. " 10 70
+sleep 2
+}
+
+#####anahtar_imzalama
+anahtar_imzalama() {
+(
+#echo -e "\e[93m [kickstart : ahtapot_ca ile imzalama işlemi gerçekleştiriliyor. ] ********************** \e[0m"
+ssh-keygen -s $dirkey/$ahtapot_ca -I ahtapotops@ahtapot.com -n ahtapotops -O no-agent-forwarding -O no-port-forwarding -O no-x11-forwarding $dirkey/"$ahtapotops.pub" 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+ssh-keygen -s $dirkey/$ahtapot_ca -I ahtapotops@ahtapot.com -n ahtapotops -O no-agent-forwarding -O no-port-forwarding -O no-x11-forwarding $dirkey/"$git.pub" 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+ssh-keygen -s $dirkey/$ahtapot_ca -I ahtapotops@ahtapot.com -n ahtapotops -O permit-port-forwarding -O permit-x11-forwarding -O force-command="/var/opt/gdysgui/gdys-gui.py" $dirkey/"$fw_kullanici.pub" 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+ssh-keygen -s $dirkey/$ahtapot_ca -I ahtapotops@ahtapot.com -n ahtapotops -O no-port-forwarding -O no-x11-forwarding -O force-command="sudo touch /var/run/firewall" $dirkey/"$gdyshook.pub" 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+ssh-keygen -s $dirkey/$ahtapot_ca -I ahtapotops@ahtapot.com -n ahtapotops -O no-port-forwarding -O no-x11-forwarding -O force-command="sudo touch /var/run/state" $dirkey/"$myshook.pub" 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+)  | dialog --title "Anahtar İmzalama" --backtitle "Ahtapot BSGS Kickstart v1.0" --infobox "ahtapot_ca ile imzalama işlemi gerçekleştiriliyor." 10 70
+sleep 2
+}
+
+#####id_rsa oluşturuyor.
+id_rsa_create() {
+(
+if [ ! -f ~/.ssh/id_rsa.pub ]; then
+        cp $dirkey/"$ahtapotops" ~/.ssh/id_rsa 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+        cp $dirkey/"$ahtapotops".pub ~/.ssh/id_rsa.pub 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+	cp $dirkey/ahtapotops-cert.pub ~/.ssh/id_rsa-cert.pub 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+fi
+) | dialog --title "SSH Keys Oluşturma" --backtitle "Ahtapot BSGS Kickstart v1.0" --infobox "~/.ssh/id_rsa dosyaları oluşturuldu. " 10 70
+sleep 2
+}
+
+######anahtarların kontrolü
+authorized_keys_kontrol() {
+(
+if [ ! -f ~/.ssh/authorized_keys ]; then
+        touch ~/.ssh/authorized_keys 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+        chmod 700 ~/.ssh/authorized_keys 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+        cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+        chmod 400 ~/.ssh/authorized_keys 1>/var/log/ahtapot/kickstart.log 2>/var/log/ahtapot/kickstart_hata.log
+fi
+) | dialog --title "SSH Keys Kontrol" --backtitle "Ahtapot BSGS Kickstart v1.0" --infobox "~/.ssh/authorized_keys dosyası oluşturuldu. id_rsa anahtarı authorized keys dosyasına eklendi. --[başarılı] " 10 70
+sleep 2
+}
+
+
+machine_reboot() {
+dialog --title "Sunucu Yeniden Başlatma" \
+--backtitle "Ahtapot BSGS Kickstart v1.0" \
+--yesno "Ahtapot BSGS Kickstart çalışması başarıyla gerçekleşmiştir. Sunucunuzu yeniden başlatmanızı öneriyoruz.Sunucunuzu yeniden başlatmak istiyor musunuz?" 10 70
+response=$?
+case $response in
+   0) reboot ;;
+   1) dialog --title "Sunucu Yeniden Başlatma" --backtitle "Ahtapot BSGS Kickstart v1.0" --msgbox "Ahtapot BSGS Kickstart çalışması başarıyla gerçekleşmiştir. Ahtapot BSGS kurulum adımlarına devam edebilirsiniz." 10 70 ;;
+  255) dialog --title "Sunucu Yeniden Başlatma" --backtitle "Ahtapot BSGS Kickstart v1.0" --msgbox "Çıkış yaptınız.." 10 70 ;;
+esac
+}
