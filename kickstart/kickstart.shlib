@@ -26,6 +26,10 @@ Kullanım:	./kickstart -parametre | --parametre
 END
 }
 
+#####dialoginstall
+dialoginstall() {
+sudo apt-get install dialog -y
+}
 
 #####update&distupgrade
 distupgrade(){
