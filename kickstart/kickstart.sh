@@ -30,6 +30,9 @@ while [ -n "$1" ]; do
     esac
 done
 
+####dialoginstall
+dialoginstall
+
 #####distupgrade ve update
 distupgrade
 
