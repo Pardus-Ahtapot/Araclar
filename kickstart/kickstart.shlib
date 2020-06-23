@@ -241,7 +241,7 @@ dialog --title "Sunucu Yeniden Başlatma" \
 --yesno "Ahtapot BSGS Kickstart çalışması başarıyla gerçekleşmiştir. Sunucunuzu yeniden başlatmanızı öneriyoruz.Sunucunuzu yeniden başlatmak istiyor musunuz?" 10 70
 response=$?
 case $response in
-   0) reboot ;;
+   0) sudo reboot ;;
    1) dialog --title "Sunucu Yeniden Başlatma" --backtitle "Ahtapot BSGS Kickstart v1.0" --msgbox "Ahtapot BSGS Kickstart çalışması başarıyla gerçekleşmiştir. Ahtapot BSGS kurulum adımlarına devam edebilirsiniz." 10 70 ;;
   255) dialog --title "Sunucu Yeniden Başlatma" --backtitle "Ahtapot BSGS Kickstart v1.0" --msgbox "Çıkış yaptınız.." 10 70 ;;
 esac
