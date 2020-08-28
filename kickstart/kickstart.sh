@@ -14,10 +14,10 @@ while [ -n "$1" ]; do
             exit
             ;;
         -i | --info | --information | i)
-            echo "Ahtapot BSGS Kickstart, MYS kurulum öncesi işlemleri gerçekleştiren basit bir scripttir."
+            echo "Ahtapot BSGS MYS'nin hızlı kurulumu için geliştirilmiş bash scripttir."
             exit;;
-        -V | --version | V)
-            echo "Ahtapot BSGS Kickstart v1.0"
+        -v | --version | v)
+            echo "Ahtapot BSGS hızlı kurulum aracı Kickstart v1.0"
            exit;;
         -n)
             doNothing=1;
@@ -29,6 +29,9 @@ while [ -n "$1" ]; do
                 ;;
     esac
 done
+
+#####rootkontrol
+rootkontrol
 
 ####dialoginstall
 dialoginstall
