@@ -1,5 +1,5 @@
 #####Ahtapot BSGS Kickstart kurulum öncesi işlemleri kolaylaştırıcı uygulamadır. 
-#####kickstart.sh v1.1
+#####Ahtapot Kickstart.sh v1.1
 #####Yardım için ./kickstart.sh --help
 
 #!/bin/bash
