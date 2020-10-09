@@ -1,79 +1,71 @@
+#####Ahtapot BSGS Kickstart kurulum öncesi işlemleri kolaylaştırıcı uygulamadır. 
+#####kickstart.sh v1.1
+#####Yardım için ./kickstart.sh --help
+
 #!/bin/bash
+source kickstart.ini
+source kickstart.shlib
 
-#kickstart.sh version0.1
-#Sunucu_ismi_değiştirme
-hostname=$(cat /etc/hostname)
-echo "Sunucu adınız: $hostname"
+doNothing=0;
+while [ -n "$1" ]; do
+    case "$1" in
+        -h | --help | h)
+            Help
+            exit
+            ;;
+        -i | --info | --information | i)
+            echo "Ahtapot BSGS MYS'nin hızlı kurulumu için geliştirilmiş bash scripttir."
+            exit;;
+        -v | --version | v)
+            echo "Ahtapot BSGS hızlı kurulum aracı Kickstart v1.0"
+           exit;;
+        -n)
+            doNothing=1;
+            shift
+            ;;
+        -* | *)
+            echo "HATA tanımlanamayan parametre"
+            break
+                ;;
+    esac
+done
 
-#read -r -p "Sunucu adınızı değiştirmek istediğinizden emin  misiniz? [E/H] " cevap
-echo -n "Sunucu adınızı değiştirmek istiyor musunuz? (e/h)? "
-read cevap
-	if [ ! "$cevap" = "${cevap#[Hh]}" ] ;then
-		echo "Sunucu adınız: $hostname"
-	else
-                echo "Yeni sunucu adınızı giriniz: "
-                read newhostname
-                sudo sed -i "s/$hostname/$newhostname/g" /etc/hosts
-                sudo sed -i "s/$hostname/$newhostname/g" /etc/hostname
-                echo "Yeni sunucu adınız: $newhostname"
-	fi
-#read -s -n  -p "Sunucuyu yeniden başlatmak için bir tuşa basınız."
-#sudo reboot
-#set -e
+#####rootkontrol
+rootkontrol
 
-#ahtapot-mys paketinin insdirilmesi
-sudo apt-get download ahtapot-mys
-sudo apt install ./ahtapot-mys*
-#sudo apt-get install ahtapot-mys
+####dialoginstall
+dialoginstall
 
-#.ssh_dizin_kontrol
-if [ ! -d ~/.ssh2 ]; then
-	mkdir -p ~/.ssh2/
-fi
+#####distupgrade ve update
+distupgrade
 
-#anahtarlar dizin kontrol
-if [ ! -d ~/anahtarlar ]; then
-	mkdir -p ~/anahtarlar/
-fi
+#####ahtapot ve pardus repoları eklendi
+sourceslist_change
 
-echo "Uzaktan bağlantı için gerekli anahtarlarınız oluşturuluyor..."
-#anahtarların oluşturulması
-ssh-keygen -f ahtapotops -N "" -f ~/anahtarlar/ahtapotops
-ssh-keygen -f ahtapot_ca -N "" -f ~/anahtarlar/ahtapot_ca
-ssh-keygen -f git -N "" -f ~/anahtarlar/git
-ssh-keygen -f myshook -N "" -f ~/anahtarlar/myshook
-ssh-keygen -f gdyshook -N "" -f ~/anahtarlar/gdyshook
-ssh-keygen -f fw_kullanici -N "" -f ~/anahtarlar/fw_kullanici
-echo "ssh-keygen ile anahtarlar oluşturuldu. --[başarılı]"
+#####makina hostname değiştiriliyor
+hostname_change
 
-#anahtarların imzalanması
-ssh-keygen -s ~/anahtarlar/ahtapot_ca -I ahtapotops@ahtapot.com -n ahtapotops -O no-agent-forwarding -O no-port-forwarding -O no-x11-forwarding ~/anahtarlar/ahtapotops.pub
-ssh-keygen -s ~/anahtarlar/ahtapot_ca -I ahtapotops@ahtapot.com -n ahtapotops -O no-agent-forwarding -O no-port-forwarding -O no-x11-forwarding ~/anahtarlar/git.pub
-ssh-keygen -s ~/anahtarlar/ahtapot_ca -I ahtapotops@ahtapot.com -n ahtapotops -O permit-port-forwarding -O permit-x11-forwarding -O force-command="/var/opt/gdysgui/gdys-gui.py" ~/anahtarlar/fw_kullanici.pub
-ssh-keygen -s ~/anahtarlar/ahtapot_ca -I ahtapotops@ahtapot.com -n ahtapotops -O no-port-forwarding -O no-x11-forwarding -O force-command="sudo touch /var/run/firewall" ~/anahtarlar/gdyshook.pub
-ssh-keygen -s ~/anahtarlar/ahtapot_ca -I ahtapotops@ahtapot.com -n ahtapotops -O no-port-forwarding -O no-x11-forwarding -O force-command="sudo touch /var/run/state" ~/anahtarlar/myshook.pub
-echo "ssh-keygen ile ahtapot_ca tarafından anahtarlar imzalandı --[başarılı]"
+#####ahtapot_mys indirme veya kurulması
+#ahtapot_mys_indir
+ahtapot_mys_guncel
 
-if [ ! -f ~/.ssh2/id_rsa.pub ]; then
-#        ssh-keygen -t rsa -N "" -f ~/.ssh2/id_rsa
-# 	ssh-keygen -f ahtapotops -N "" -f ~/.ssh2/id_rsa
-	cp ~/anahtarlar/ahtapotops ~/.ssh2/id_rsa
-	cp ~/anahtarlar/ahtapotops.pub ~/.ssh2/id_rsa.pub
-#        echo "ssh-keygen çalıştırıldı --[başarılı]"
-fi
+#####ssh dizini oluşturma
+ssh_directory
 
-#authorized_keys kontrol edin, paylaşılan ssh anahtarlarını ekleyin
-if [ ! -f ~/.ssh2/authorized_keys ]; then
-        touch ~/.ssh2/authorized_keys
-        echo " ~/.ssh/authorized_keys dosyası oluşturuldu. --[başarılı]"
-fi
-chmod 700 ~/.ssh2/authorized_keys
-cat ~/.ssh2/id_rsa.pub >> ~/.ssh2/authorized_keys
-echo "id_rsa anahtarı authorized keys dosyasına eklendi. --[başarılı]"
-chmod 400 ~/.ssh2/authorized_keys
-chmod 700 ~/.ssh2/
+#####keylerin dizinini oluşturma
+keys_directory
 
-set +e
-read -s -n -p "Makinanızı yeniden başlatmak için bir tuşa basınız."
-#read -p "Makinanızı yeniden başlatmak için bir tuşa basınız."
-sudo reboot
+#####anahtarların oluşturulması
+anahtar_olusturma
+
+#####anahtarların imzalanması
+anahtar_imzalama
+
+#####ssh içerisinde id_rsa oluşturulması
+id_rsa_create
+
+#####authorized_keys kontrol edin, paylaşılan ssh anahtarlarını ekleyin
+authorized_keys_kontrol
+
+machine_reboot
+
